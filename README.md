@@ -9,17 +9,31 @@ will turn green.
 
 <table>
 <tr><th>Initial State </th><th>Goal State</th></tr>
-<tr><td>
-
-| 1 | 6 | 2 |   
-|---|---|---|
-|  | 4 | 5 |
-| 3 | 8 | 7 |
-</td><td>
-
-| 1 | 2 | 3 |   
-|---|---|---|
-| 4 | 5 | 6 |
-| 7 | 8 |  |
-</td></tr>
+<tr>
+<td>
+    <table>
+        <tr>
+            <td>1</td><td>6</td><td>2</td>
+        </tr>
+        <tr>
+            <td></td><td>4</td><td>5</td>
+        </tr><tr>
+            <td>3</td><td>8</td><td>7</td>
+        </tr>
+    </table>
+</td>
+<td>
+    <table>
+        <tr>
+            <td>1</td><td>2</td><td>3</td>
+        </tr>
+        <tr>
+            <td>4</td><td>5</td><td>6</td>
+        </tr>
+        <tr>
+            <td>7</td><td>8</td><td></td>
+        </tr>
+    </table>
+</td>
+</tr>
 </table>
