@@ -12,58 +12,7 @@ WINDOW_HEIGHT = 500
 WINDOW_WIDTH = 500
 
 
-def main():
-    pygame.init()
-    pygame.display.set_caption('Eight Puzzle')
-    screen = pygame.display.set_mode([WINDOW_WIDTH, WINDOW_HEIGHT])
-    screen.fill(WHITE)
-
-    tiles = generate_tiles()
-    draw_tiles(screen, tiles, False)
-
-    running = True
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                screen.fill(WHITE)
-                tiles = switch_tiles(event, tiles)
-                if check_win(tiles):
-                    draw_tiles(screen, tiles, True)
-                else:
-                    draw_tiles(screen, tiles, False)
-
-        pygame.display.flip()
-
-    pygame.quit()
-
-
-def draw_tiles(screen, tiles, win):
-    tile_color = GREY
-    if win:
-        tile_color = GREEN
-
-    screen.fill(WHITE)
-
-    font_name = pygame.font.get_default_font()
-    font = pygame.font.Font(font_name, 40)
-    small_font = pygame.font.Font(font_name, 11)
-
-    block_size = WINDOW_WIDTH / 3
-
-    for tile in tiles:
-        pygame.draw.rect(screen, tile_color, tile[0])
-        text = tile[1]
-        label = tile[2]
-        tile_label = font.render(f"{text}", True, BLACK)
-        pos_label = small_font.render(f"{label}", True, BLACK)
-        screen.blit(tile_label, (tile[0].x + (block_size / 2), tile[0].y + (block_size / 2)))
-        screen.blit(pos_label, (tile[0].x + (block_size / 2) - 2, tile[0].y + (block_size / 2) + 50))
-
-
-def generate_tiles():
+def generate_tiles(custom_state):
     numbers = [1, 2, 3, 4, 5, 6, 7, 8, '']
     labels = ['(0, 0)', '(1, 0)', '(2, 0)', '(0, 1)', '(1, 1)', '(2, 1)', '(0, 2)', '(1, 2)', '(2, 2)']
     block_size = WINDOW_WIDTH / 3
@@ -74,7 +23,10 @@ def generate_tiles():
             rect = pygame.Rect(x * (block_size + 1), y * (block_size + 1), block_size, block_size)
             grid.append(rect)
 
-    random.shuffle(numbers)
+    if custom_state:
+        numbers = custom_state
+    else:
+        random.shuffle(numbers)
 
     tiles = []
     for i in range(len(grid)):
@@ -83,51 +35,111 @@ def generate_tiles():
     return tiles
 
 
-def get_empty(tiles):
-    for tile in tiles:
-        if tile[1] == '':
-            return [math.floor(tile[0].x / (WINDOW_HEIGHT / 3)), math.floor(tile[0].y / (WINDOW_HEIGHT / 3))]
-    return None
+class Puzzle:
+    def __init__(self, tiles=None):
+        if tiles is None:
+            tiles = []
+
+        self.tiles = generate_tiles(tiles)
+
+    def main(self):
+        pygame.init()
+        pygame.display.set_caption('Eight Puzzle')
+        screen = pygame.display.set_mode([WINDOW_WIDTH, WINDOW_HEIGHT])
+        screen.fill(WHITE)
+
+        self.draw_tiles(screen, False)
+
+        running = True
+
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.switch_tiles(event)
+                    if self.check_win():
+                        self.draw_tiles(screen, True)
+                    else:
+                        self.draw_tiles(screen, False)
+
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_m:
+                        print('M pressed')
+
+            pygame.display.flip()
+
+        pygame.quit()
+
+    def draw_tiles(self, screen, win):
+        tile_color = GREY
+        if win:
+            tile_color = GREEN
+
+        screen.fill(WHITE)
+
+        font_name = pygame.font.get_default_font()
+        font = pygame.font.Font(font_name, 40)
+        small_font = pygame.font.Font(font_name, 11)
+
+        block_size = WINDOW_WIDTH / 3
+
+        for tile in self.tiles:
+            pygame.draw.rect(screen, tile_color, tile[0])
+            text = tile[1]
+            text = '' if text == 0 else text
+            label = tile[2]
+            tile_label = font.render(f"{text}", True, BLACK)
+            pos_label = small_font.render(f"{label}", True, BLACK)
+            screen.blit(tile_label, (tile[0].x + (block_size / 2), tile[0].y + (block_size / 2)))
+            screen.blit(pos_label, (tile[0].x + (block_size / 2) - 2, tile[0].y + (block_size / 2) + 50))
+
+    def get_empty(self):
+        for tile in self.tiles:
+            if tile[1] == 0:
+                return [math.floor(tile[0].x / (WINDOW_HEIGHT / 3)), math.floor(tile[0].y / (WINDOW_HEIGHT / 3))]
+        return None
+
+    def get_clicked(self, event):
+        event_pos = [math.floor(event.pos[0] / (WINDOW_HEIGHT / 3)), math.floor(event.pos[1] / (WINDOW_HEIGHT / 3))]
+
+        for tile in self.tiles:
+            tile_pos = [math.floor(tile[0].x / (WINDOW_HEIGHT / 3)), math.floor(tile[0].y / (WINDOW_HEIGHT / 3))]
+            if event_pos == tile_pos:
+                return event_pos
+
+        return None
+
+    def switch_tiles(self, event):
+        empty_rect = self.get_empty()
+        empty = 0
+        if empty_rect is not None:
+            empty = empty_rect[0] + 3 * empty_rect[1]
+
+        clicked_rect = self.get_clicked(event)
+        clicked = 0
+        if clicked_rect is not None:
+            clicked = clicked_rect[0] + 3 * clicked_rect[1]
+
+        is_valid_x = abs(clicked_rect[0] - empty_rect[0])
+        is_valid_y = abs(clicked_rect[1] - empty_rect[1])
+
+        if is_valid_x != is_valid_y and is_valid_x <= 1 and is_valid_y <= 1:
+            self.tiles[empty][1], self.tiles[clicked][1] = self.tiles[clicked][1], self.tiles[empty][1]
+        return self.tiles
+
+    def check_win(self):
+        current_seq = [row[1] for row in self.tiles]
+        win = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+
+        if current_seq == win:
+            return True
+
+        return False
 
 
-def get_clicked(event, tiles):
-    event_pos = [math.floor(event.pos[0] / (WINDOW_HEIGHT / 3)), math.floor(event.pos[1] / (WINDOW_HEIGHT / 3))]
+custom_state1 = [5, 2, 3, 6, 7, 8, 9, 0, 1]
+custom_state2 = [1, 2, 3, 0, 4, 6, 7, 5, 8]
 
-    for tile in tiles:
-        tile_pos = [math.floor(tile[0].x / (WINDOW_HEIGHT / 3)), math.floor(tile[0].y / (WINDOW_HEIGHT / 3))]
-        if event_pos == tile_pos:
-            return event_pos
-
-    return None
-
-
-def switch_tiles(event, tiles):
-    empty_rect = get_empty(tiles)
-    empty = 0
-    if empty_rect is not None:
-        empty = empty_rect[0] + 3 * empty_rect[1]
-
-    clicked_rect = get_clicked(event, tiles)
-    clicked = 0
-    if clicked_rect is not None:
-        clicked = clicked_rect[0] + 3 * clicked_rect[1]
-
-    is_valid_x = abs(clicked_rect[0] - empty_rect[0])
-    is_valid_y = abs(clicked_rect[1] - empty_rect[1])
-
-    if is_valid_x != is_valid_y and is_valid_x <= 1 and is_valid_y <= 1:
-        tiles[empty][1], tiles[clicked][1] = tiles[clicked][1], tiles[empty][1]
-    return tiles
-
-
-def check_win(tiles):
-    in_order = [row[1] for row in tiles]
-    win = [1, 2, 3, 4, 5, 6, 7, 8, '']
-
-    if in_order == win:
-        return True
-
-    return False
-
-
-main()
+Game = Puzzle(custom_state2)
+Game.main()
