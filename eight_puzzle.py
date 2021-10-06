@@ -2,6 +2,8 @@ import pygame
 import random
 import math
 
+from informed_search import InformedSearch
+
 BLACK = (0, 0, 0)
 GREY = (200, 200, 200)
 WHITE = (255, 255, 255)
@@ -13,7 +15,7 @@ WINDOW_WIDTH = 500
 
 
 def generate_tiles(custom_state):
-    numbers = [1, 2, 3, 4, 5, 6, 7, 8, '']
+    numbers = [1, 2, 3, 4, 5, 6, 7, 8, 0]
     labels = ['(0, 0)', '(1, 0)', '(2, 0)', '(0, 1)', '(1, 1)', '(2, 1)', '(0, 2)', '(1, 2)', '(2, 2)']
     block_size = WINDOW_WIDTH / 3
 
@@ -57,15 +59,19 @@ class Puzzle:
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.switch_tiles(event)
+                    self.switch_tiles_click(event)
                     if self.check_win():
                         self.draw_tiles(screen, True)
                     else:
                         self.draw_tiles(screen, False)
-
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_m:
-                        print('M pressed')
+                        current_seq = [row[1] for row in self.tiles]
+
+                        solver = InformedSearch(current_seq)
+                        path = solver.solve()
+
+                        print(f'It took {path[0]} iterations to find a path with {path[1]} moves.')
 
             pygame.display.flip()
 
@@ -89,8 +95,8 @@ class Puzzle:
             text = tile[1]
             text = '' if text == 0 else text
             label = tile[2]
-            tile_label = font.render(f"{text}", True, BLACK)
-            pos_label = small_font.render(f"{label}", True, BLACK)
+            tile_label = font.render(f'{text}', True, BLACK)
+            pos_label = small_font.render(f'{label}', True, BLACK)
             screen.blit(tile_label, (tile[0].x + (block_size / 2), tile[0].y + (block_size / 2)))
             screen.blit(pos_label, (tile[0].x + (block_size / 2) - 2, tile[0].y + (block_size / 2) + 50))
 
@@ -110,7 +116,7 @@ class Puzzle:
 
         return None
 
-    def switch_tiles(self, event):
+    def switch_tiles_click(self, event):
         empty_rect = self.get_empty()
         empty = 0
         if empty_rect is not None:
@@ -128,6 +134,22 @@ class Puzzle:
             self.tiles[empty][1], self.tiles[clicked][1] = self.tiles[clicked][1], self.tiles[empty][1]
         return self.tiles
 
+    def switch_tiles(self, num):
+        empty_rect = self.get_empty()
+        empty = 0
+        selected = 0
+
+        if empty_rect is not None:
+            empty = empty_rect[0] + 3 * empty_rect[1]
+
+        for i in range(len(self.tiles)):
+            if self.tiles[i][1] == num:
+                selected = i
+
+        self.tiles[empty][1], self.tiles[selected][1] = self.tiles[selected][1], self.tiles[empty][1]
+
+        return self.tiles
+
     def check_win(self):
         current_seq = [row[1] for row in self.tiles]
         win = [1, 2, 3, 4, 5, 6, 7, 8, 0]
@@ -138,8 +160,9 @@ class Puzzle:
         return False
 
 
-custom_state1 = [5, 2, 3, 6, 7, 8, 9, 0, 1]
+custom_state1 = [2, 3, 6, 1, 4, 8, 7, 5, 0]
 custom_state2 = [1, 2, 3, 0, 4, 6, 7, 5, 8]
+custom_state3 = [5, 7, 2, 6, 0, 4, 1, 8, 3]
 
-Game = Puzzle(custom_state2)
+Game = Puzzle(custom_state3)
 Game.main()
