@@ -1,18 +1,14 @@
 from eight_puzzle_state import State
 
 
-def sort(e):
-    return e.weight
-
-
 class InformedSearch:
-    open_list = []
-    closed_list = []
-    depth = 0
     goal = State([1, 2, 3, 4, 5, 6, 7, 8, 0], 0, 0)
 
     def __init__(self, current):
         self.current = State(current, 0, 0)
+        self.open_list = []
+        self.closed_list = []
+        self.depth = 0
         self.open_list.append(self.current)
 
     """
@@ -89,7 +85,7 @@ class InformedSearch:
             flag = self.check_open_closed(temp_state)
             self.handle_flag(flag, temp_state)
 
-        self.open_list.sort(key=sort)
+        self.open_list.sort(key=lambda x: x.weight)
         self.current = self.open_list[0]
 
     """
@@ -129,10 +125,12 @@ class InformedSearch:
         if flag == 1:
             self.heuristic_test(temp_state)
             self.open_list.append(temp_state)
+
         # In open_list
         if flag == 2:
             if temp_state.depth < self.current.depth:
                 self.open_list.append(temp_state)
+
         # In closed_list
         if flag == 3:
             if temp_state.depth < self.current.depth:

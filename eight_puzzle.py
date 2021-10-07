@@ -66,11 +66,11 @@ class Puzzle:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_m:
                         current_seq = [row[1] for row in self.tiles]
+
                         solver = InformedSearch(current_seq)
                         path = solver.solve()
 
                         if path:
-                            print(f"Iterations {solver.depth}\nMoves: {len(path)}")
                             for move in path:
                                 self.draw_tiles(screen, False, move)
                                 pygame.display.flip()
@@ -87,6 +87,9 @@ class Puzzle:
 
                         elif path is None:
                             print("Solution not found.")
+                    if event.key == pygame.K_r:
+                        self.randomize_tiles()
+                        self.draw_tiles(screen, False)
 
             pygame.display.flip()
 
@@ -171,6 +174,13 @@ class Puzzle:
 
         return self.tiles
 
+    def randomize_tiles(self):
+        numbers = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+        random.shuffle(numbers)
+
+        for i in range(len(numbers)):
+            self.tiles[i][1] = numbers[i]
+
     def check_win(self):
         current_seq = [row[1] for row in self.tiles]
         win = [1, 2, 3, 4, 5, 6, 7, 8, 0]
@@ -186,5 +196,5 @@ custom_state2 = [1, 2, 3, 0, 4, 6, 7, 5, 8]
 custom_state3 = [5, 7, 2, 6, 0, 4, 1, 8, 3]
 custom_state4 = [2, 4, 0, 6, 5, 3, 7, 1, 8]
 
-Game = Puzzle(custom_state3)
+Game = Puzzle(custom_state4)
 Game.main()

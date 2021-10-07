@@ -39,10 +39,12 @@ will turn green.
 </table>
 
 ## How to Play
-The player can move tiles around the board by clicking on adjacent tiles to swap with.
+The player can move the empty tile around the board by clicking on adjacent tiles to swap with.
 The player wins once all tiles are in numerical order with the blank tile at the end. 
-If the player is unable to solve the puzzle, they may choose a pathfinding algorithm to
-help find a path to the goal.
+If the player is unable to solve the puzzle, they may choose a pathfinding algorithm to help find 
+a path to the goal.
+
+Press 'R' to generate a new random puzzle. 
 
 ### Solve
 #### A* Algorithm
