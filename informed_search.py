@@ -8,7 +8,7 @@ class InformedSearch:
         self.current = State(current, 0, 0)
         self.open_list = []
         self.closed_list = []
-        self.depth = 0
+        self.iter = 0
         self.open_list.append(self.current)
 
     """
@@ -38,7 +38,7 @@ class InformedSearch:
         pos = walk_state.index(0)
         row, col = pos // 3, pos % 3
 
-        self.depth += 1
+        self.iter += 1
 
         # Try to move in each direction
         # First state, moving left
@@ -154,7 +154,7 @@ class InformedSearch:
             self.state_walk()
             full_path.append(self.current)
 
-            if self.depth > 5000:
+            if self.iter > 10000:
                 return None
 
         # Backtrack from the goal state and find the states it took to get there
