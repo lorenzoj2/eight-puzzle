@@ -8,7 +8,6 @@ BLACK = (0, 0, 0)
 GREY = (200, 200, 200)
 WHITE = (255, 255, 255)
 GREEN = (0, 128, 0)
-BLUE = (135, 206, 250)
 
 WINDOW_HEIGHT = 500
 WINDOW_WIDTH = 500
@@ -67,17 +66,33 @@ class Puzzle:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_m:
                         current_seq = [row[1] for row in self.tiles]
-
                         solver = InformedSearch(current_seq)
                         path = solver.solve()
 
-                        print(f'It took {path[0]} iterations to find a path with {path[1]} moves.')
+                        if path:
+                            print(f"Iterations {solver.depth}\nMoves: {len(path)}")
+                            for move in path:
+                                self.draw_tiles(screen, False, move)
+                                pygame.display.flip()
+                                pygame.time.wait(500)
+                                self.switch_tiles(move)
+
+                                if self.check_win():
+                                    self.draw_tiles(screen, True)
+                                    pygame.display.flip()
+                                else:
+                                    self.draw_tiles(screen, False)
+                                    pygame.display.flip()
+                                    pygame.time.wait(200)
+
+                        elif path is None:
+                            print("Solution not found.")
 
             pygame.display.flip()
 
         pygame.quit()
 
-    def draw_tiles(self, screen, win):
+    def draw_tiles(self, screen, win, num=None):
         tile_color = GREY
         if win:
             tile_color = GREEN
@@ -91,7 +106,11 @@ class Puzzle:
         block_size = WINDOW_WIDTH / 3
 
         for tile in self.tiles:
-            pygame.draw.rect(screen, tile_color, tile[0])
+            if tile[1] == num:
+                pygame.draw.rect(screen, GREEN, tile[0])
+            else:
+                pygame.draw.rect(screen, tile_color, tile[0])
+
             text = tile[1]
             text = '' if text == 0 else text
             label = tile[2]
@@ -104,6 +123,7 @@ class Puzzle:
         for tile in self.tiles:
             if tile[1] == 0:
                 return [math.floor(tile[0].x / (WINDOW_HEIGHT / 3)), math.floor(tile[0].y / (WINDOW_HEIGHT / 3))]
+
         return None
 
     def get_clicked(self, event):
@@ -132,6 +152,7 @@ class Puzzle:
 
         if is_valid_x != is_valid_y and is_valid_x <= 1 and is_valid_y <= 1:
             self.tiles[empty][1], self.tiles[clicked][1] = self.tiles[clicked][1], self.tiles[empty][1]
+
         return self.tiles
 
     def switch_tiles(self, num):
@@ -163,6 +184,7 @@ class Puzzle:
 custom_state1 = [2, 3, 6, 1, 4, 8, 7, 5, 0]
 custom_state2 = [1, 2, 3, 0, 4, 6, 7, 5, 8]
 custom_state3 = [5, 7, 2, 6, 0, 4, 1, 8, 3]
+custom_state4 = [2, 4, 0, 6, 5, 3, 7, 1, 8]
 
 Game = Puzzle(custom_state3)
 Game.main()

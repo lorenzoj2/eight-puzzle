@@ -37,3 +37,15 @@ will turn green.
 </td>
 </tr>
 </table>
+
+## How to Play
+The player can move tiles around the board by clicking on adjacent tiles to swap with.
+The player wins once all tiles are in numerical order with the blank tile at the end. 
+If the player is unable to solve the puzzle, they may choose a pathfinding algorithm to
+help find a path to the goal.
+
+### Solve
+#### A* Algorithm
+Press 'M' for the A* algorithm. This algorithm uses a heuristic function to guide which moves
+should be selected. The heuristic value for each possible move is calculated by the number of tiles out of place and 
+the Manhattan distance. The best state is then selected based on depth and best heuristic value. 

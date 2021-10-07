@@ -41,6 +41,7 @@ class InformedSearch:
 
         pos = walk_state.index(0)
         row, col = pos // 3, pos % 3
+
         self.depth += 1
 
         # Try to move in each direction
@@ -51,7 +52,7 @@ class InformedSearch:
 
             temp[pos], temp[pos - 1] = temp[pos - 1], temp[pos]
 
-            temp_state = State(temp, self.current.depth + 1, 0)
+            temp_state = State(temp, self.current.depth + 1, 0, self.current)
             flag = self.check_open_closed(temp_state)
             self.handle_flag(flag, temp_state)
 
@@ -62,7 +63,7 @@ class InformedSearch:
 
             temp[pos], temp[pos + 1] = temp[pos + 1], temp[pos]
 
-            temp_state = State(temp, self.current.depth + 1, 0)
+            temp_state = State(temp, self.current.depth + 1, 0, self.current)
             flag = self.check_open_closed(temp_state)
             self.handle_flag(flag, temp_state)
 
@@ -73,7 +74,7 @@ class InformedSearch:
 
             temp[pos], temp[pos - 3] = temp[pos - 3], temp[pos]
 
-            temp_state = State(temp, self.current.depth + 1, 0)
+            temp_state = State(temp, self.current.depth + 1, 0, self.current)
             flag = self.check_open_closed(temp_state)
             self.handle_flag(flag, temp_state)
 
@@ -84,7 +85,7 @@ class InformedSearch:
 
             temp[pos], temp[pos + 3] = temp[pos + 3], temp[pos]
 
-            temp_state = State(temp, self.current.depth + 1, 0)
+            temp_state = State(temp, self.current.depth + 1, 0, self.current)
             flag = self.check_open_closed(temp_state)
             self.handle_flag(flag, temp_state)
 
@@ -140,13 +141,43 @@ class InformedSearch:
 
     """
     Walks through all possible moves until the goal state is reached. 
-    :return: Returns the number of iterations it took to find the goal state.
+    :return: Returns a list in order of the moves to take to reach the goal state.
     """
     def solve(self):
-        iterations = 0
+        # List of every state explored during the state walk
+        full_path = []
+        # The initial state of the board
+        first = self.current.tile_seq
+
+        if first == self.goal.tile_seq:
+            return []
 
         while self.current != self.goal:
             self.state_walk()
-            iterations += 1
+            full_path.append(self.current)
 
-        return [iterations, self.current.depth]
+            if self.depth > 5000:
+                return None
+
+        # Backtrack from the goal state and find the states it took to get there
+        full_path.reverse()
+        current = full_path[0].parent.tile_seq
+        path = []
+
+        for state in full_path:
+            if current == state.tile_seq:
+                path.append(state.tile_seq)
+                current = state.parent.tile_seq if state.parent is not None else None
+
+        path.reverse()
+        path.insert(0, first)
+        path.append(full_path[0].tile_seq)
+
+        # New list with only the numbers being swapped in order to get from initial state to goal state
+        moves = []
+        for i in range(len(path) - 1):
+            for j in range(len(path[i])):
+                if path[i][j] != path[i+1][j] and path[i][j] != 0:
+                    moves.append(path[i][j])
+
+        return moves
